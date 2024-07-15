@@ -1,0 +1,7 @@
+*.py
+!resize.py
+data/
+*.jpg
+*.png
+.DS_Store
+.idea/
