@@ -12,25 +12,20 @@ class PhotoJoin:
         self.quality = quality
         self.downscale = downscale
         self.landscape = landscape
-        self.image_info = list()  # Initialize image_info attribute
+        self.image_info = []  # Initialize image_info attribute
 
     @staticmethod
-    def path_converter(self, path):
+    def path_converter(path):
         return Path(path)
 
-    def trim_alpha(self):
-        for file in self.files:
-            with Image(file=file) as img:
+    def calculate_scales(self):
+        # Extract image data: path, width, height after trimming alpha
+        image_data = []
+        for image_path in self.files:
+            with Image(filename=image_path) as img:
                 if img.alpha_channel:
                     img.trim()
-
-    def calculate_scales(self):
-        # Extract image data: path, width, height
-        image_data = [
-            (image_path, img.width, img.height)
-            for image_path in self.files
-            for img in [Image(filename=image_path)]
-        ]
+                image_data.append((image_path, img.width, img.height))
 
         # Extract widths and heights separately
         widths, heights = zip(*[(width, height) for _, width, height in image_data])
@@ -45,10 +40,7 @@ class PhotoJoin:
         scale_width = min_width if self.downscale else max_width
         scale_height = min_height if self.downscale else max_height
 
-        if self.landscape:
-            scale_factor = scale_height
-        else:
-            scale_factor = scale_width
+        scale_factor = scale_height if self.landscape else scale_width
 
         # Create image_info with appropriate scales
         self.image_info = [
@@ -58,11 +50,10 @@ class PhotoJoin:
         ]
 
     def blob_image(self):
-        blobs = list()
+        blobs = []
         for image in self.image_info:
             with Image(filename=image['path']) as img:
                 img.scale(int(img.width * image['scale']), int(img.height * image['scale']))
-                # img.trim()
                 img.compression_quality = 92
                 blobs.append(img.make_blob())
         return blobs
@@ -78,7 +69,6 @@ class PhotoJoin:
             img.save(filename=f"{self.output}.{self.file_format}")
 
     def run(self):
-        self.trim_alpha()
         self.calculate_scales()
         blobs = self.blob_image()
         self.concat(blobs)
