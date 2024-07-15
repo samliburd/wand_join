@@ -7,3 +7,4 @@
 # Do not ignore specific files
 !join_photos.py
 !oop_join_photos.py
+!oop_montage.py
