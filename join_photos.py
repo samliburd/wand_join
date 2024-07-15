@@ -1,9 +1,6 @@
-from wand.image import Image
-from wand.display import display
-from pprint import pprint
-from pathlib import Path
-import sys
 import argparse
+from wand.image import Image
+from pathlib import Path
 
 
 def path_converter(path):
