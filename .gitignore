@@ -1,7 +1,9 @@
-*.py
+# Ignore all files
+*
+
+# Do not ignore directories, so git can traverse the tree
+!*/
+
+# Do not ignore specific files
 !join_photos.py
-data/
-*.jpg
-*.png
-.DS_Store
-.idea/
+!oop_join_photos.py

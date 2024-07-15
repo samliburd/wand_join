@@ -42,41 +42,47 @@ def calculate_scales(images, downscale=False, landscape=False):
 
 
 def blob_image(images):
-    return [
-        img.make_blob()
-        for image in images
-        for img in [Image(filename=image['path'])]
-        if img.scale(int(img.width * image['scale']), int(img.height * image['scale']))
-    ]
+    arr = []
+    for image in images:
+        with Image(filename=image['path']) as img:
+            img.scale(int(img.width * image['scale']), int(img.height * image['scale']))
+            img.compression_quality = 92
+
+            arr.append(img.make_blob())
+    return arr
 
 
-def concat(blobs, output, landscape=False):
+
+def concat(blobs, output, landscape=False, file_format="jpg", quality=100):
     with Image(blob=blobs[0]) as img:
         for blob in blobs[1:]:
             img.sequence.append(Image(blob=blob))
+        img.compression_quality = quality
         img.smush(True if not landscape else False)
-        img.save(filename=f"{output}.jpg")
+        img.save(filename=f"{output}.{file_format}")
 
 
 def main():
     parser = argparse.ArgumentParser(description="Concatenate images after scaling them.")
     parser.add_argument('files', type=Path, nargs='*', help='List of image files to concatenate')
     parser.add_argument('-o', '--output', type=str, required=True, help='Output filename without extension')
+    parser.add_argument('-f', '--format', type=str, default="jpg", help='Output filename extension')
+    parser.add_argument('-q', '--quality', type=int, default="92", help='Output file quality')
     parser.add_argument('-s', '--small', required=False, action='store_true',
                         help='Scale images down')
     parser.add_argument('-l', '--landscape', required=False, action='store_true',
-                        help='Scale images down')
+                        help='Append images horizontally')
     args = parser.parse_args()
 
     # Separate the output filename from the list of input files
     files = args.files
     output_filename = args.output
-
+    # print(blob_image(calculate_scales(files, args.small, args.landscape)))
     # Calculate scales and generate blobs
     blobs = blob_image(calculate_scales(files, args.small, args.landscape))
 
     # Concatenate the blobs into the output file
-    concat(blobs, output_filename, args.landscape)
+    concat(blobs, output_filename, args.landscape, args.format, args.quality)
 
 
 if __name__ == '__main__':
