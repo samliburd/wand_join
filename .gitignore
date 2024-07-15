@@ -1,5 +1,5 @@
 *.py
-!resize.py
+!join_photos.py
 data/
 *.jpg
 *.png
