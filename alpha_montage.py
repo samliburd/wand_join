@@ -73,7 +73,7 @@ def concatenate_images(image_blobs):
     with Image() as final_image:
         for blob in image_blobs:
             with Image(width=Image(blob=blob).width, height=Image(blob=blob).height, blob=blob) as img:
-                # img.transform_colorspace("srgb")
+                img.transform_colorspace("srgb")
                 final_image.image_add(img)
         final_image.smush(True)
         return final_image.make_blob()
