@@ -17,6 +17,8 @@ class PhotoJoin:
     @staticmethod
     def path_converter(path):
         return Path(path)
+    def has_alpha(self):
+        ...
 
     def calculate_scales(self):
         # Extract image data: path, width, height after trimming alpha
@@ -24,8 +26,14 @@ class PhotoJoin:
         for image_path in self.files:
             with Image(filename=image_path) as img:
                 if img.alpha_channel:
+                    print(img.size)
                     img.trim()
-                image_data.append((image_path, img.width, img.height))
+                    img.reset_coords()
+                    print(img.size)
+                    image_data.append((image_path, img.width, img.height))
+                elif not img.alpha_channel:
+                    image_data.append((image_path, img.width, img.height))
+        # print(image_data)
 
         # Extract widths and heights separately
         widths, heights = zip(*[(width, height) for _, width, height in image_data])
@@ -35,7 +43,7 @@ class PhotoJoin:
         max_height = max(heights)
         min_width = min(widths)
         min_height = min(heights)
-
+        print(max_width, max_height, min_width, min_height)
         # Determine scale factors based on flags
         scale_width = min_width if self.downscale else max_width
         scale_height = min_height if self.downscale else max_height
@@ -54,6 +62,7 @@ class PhotoJoin:
         for image in self.image_info:
             with Image(filename=image['path']) as img:
                 img.scale(int(img.width * image['scale']), int(img.height * image['scale']))
+                # print(f"{img.size}, {img}")
                 img.compression_quality = 92
                 blobs.append(img.make_blob())
         return blobs
@@ -70,6 +79,7 @@ class PhotoJoin:
 
     def run(self):
         self.calculate_scales()
+
         blobs = self.blob_image()
         self.concat(blobs)
 
